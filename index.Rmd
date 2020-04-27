@@ -130,7 +130,7 @@ ggsave(plot = ggp, filename = "figure/r_lang.png", width = 8, height = 6, units 
 
 .left-column[
 
-## Foundations
+##### Foundations
 
 - 2003 - 2016/Present
   - [`sp`](https://CRAN.R-project.org/package=sp) 
@@ -148,7 +148,7 @@ ggsave(plot = ggp, filename = "figure/r_lang.png", width = 8, height = 6, units 
 
 .right-column[
 
-## Supporting Packages (Missing many!)
+##### Supporting Packages (Missing many!)
 - Visualization/Mapping
   - [`mapview`](https://CRAN.R-project.org/package=mapview) and [`leaflet`](https://CRAN.R-project.org/package=leaflet)
   - [`tmap`](https://CRAN.R-project.org/package=tmap)
