@@ -2,7 +2,7 @@
 title: "Lakes, Landscapes, and R:"
 subtitle: "A framework for open research on freshwater cyanobacteria"
 author: "Jeff Hollister"
-date: 2020-04-28
+date: "2020-04-28"
 location: "Providence College"
 output:
   xaringan::moon_reader:
