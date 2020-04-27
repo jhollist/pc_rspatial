@@ -126,11 +126,9 @@ ggsave(plot = ggp, filename = "figure/r_lang.png", width = 8, height = 6, units 
 .footnote[Text mining facilitated by [rOpenSci's](https://ropensci.org) awesome [`fulltext`](https://CRAN.R-project.org/package=fulltext) package]
 
 ---
-# R, Spatial Data, and Landscape Ecology
+# R, Spatial Data, and Landscape Ecology: Foundations
 
 .left-column[
-
-##### Foundations
 
 - 2003 - 2016/Present
   - [`sp`](https://CRAN.R-project.org/package=sp) 
@@ -143,12 +141,18 @@ ggsave(plot = ggp, filename = "figure/r_lang.png", width = 8, height = 6, units 
 - Present - Very Near Future
   - [`stars`](https://CRAN.R-project.org/package=stars)
   - [`terra`](https://CRAN.R-project.org/package=terra)
-<img src="figure/Rlogo.png" style="width: 100%; margin-top: 50px; margin-left: -50px;"></img>
 ]
 
 .right-column[
 
-##### Supporting Packages (Missing many!)
+<img src="figure/Rlogo.png" style="width: 100%; margin-top: 50px; margin-left: -50px;"></img>
+]
+
+---
+# R, Spatial Data, and Landscape Ecology: Supporting Packages (Missing many!)
+
+.left-column[
+
 - Visualization/Mapping
   - [`mapview`](https://CRAN.R-project.org/package=mapview) and [`leaflet`](https://CRAN.R-project.org/package=leaflet)
   - [`tmap`](https://CRAN.R-project.org/package=tmap)
@@ -165,8 +169,12 @@ ggsave(plot = ggp, filename = "figure/r_lang.png", width = 8, height = 6, units 
   - [`nlmr`](https://CRAN.R-project.org/package=NLMR)
   - [`landscapetools`](https://CRAN.R-project.org/package=landscapetools)
 
+]
+
+.right-column[
 <img src="figure/LAND_Cover.jpg" style="width: 60%; margin-top: 10px; margin-left: 40px;"></img>
 ]
+
 ---
 class: center, middle, inverse
 
@@ -265,7 +273,7 @@ class: center, middle, inverse
 ---
 
 # Thanks!
-.left-column[
+
 .center[
 **Jeff Hollister**</br>
 US EPA </br>
@@ -274,18 +282,7 @@ Narragansett, RI </br>
 email: [hollister.jeff@epa.gov](mailto:hollister.jeff@epa.gov) </br>
 twitter: [@jhollist](https://twitter.com/jhollist) </br>
 github: [jhollist](https://github.com/jhollist) </br>
-]]
-
-.right-column[
-.center[
-**Bryan Milstead**</br>
-US EPA </br>
-Atlantic Ecology Division </br>
-Narragansett, RI </br>
-email: [milstead.bryan@epa.gov](mailto:milstead.bryan@epa.gov) </br>
-twitter: [@willbmisled](https://twitter.com/willbmisled) </br>
-github: [willbmisled](https://github.com/willbmisled) </br>
-]]
+]
 
 
 .footnote[
@@ -296,6 +293,6 @@ github: [willbmisled](https://github.com/willbmisled) </br>
 - Text mining of Landscape Ecology done with [`fulltext`](https://cran.r-project.org/package=fulltext) and [`rcrossref`](https://cran.r-project.org/package=rcrossref)
 
 **Slides and Source Code**
-- Slides: <https://jwhollister.com/lakes_landscapes_r>
-- Repo: <https://github.com/jhollist/lakes_landscapes_r>
+- Slides: <https://jhollist.github.io/pc_rspatial>
+- Repo: <https://github.com/jhollist/pc_rspatial>
 ]
