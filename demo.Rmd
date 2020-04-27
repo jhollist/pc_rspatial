@@ -1,0 +1,47 @@
+---
+title: "#rspatial"
+author: "Jeff Hollister"
+date: 2020-04-28
+meeting: "Providence College"
+location: "The Web"
+output:
+  xaringan::moon_reader:
+    css: ["default", "custom.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: true
+    seal: false
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(sf)
+library(raster)
+library(stars)
+library(terra)
+library(mapview)
+```
+
+# R Spatial Past
+
+## sp
+
+## rgdal
+
+## rgeos
+
+## raster
+
+# R Spatial Present
+
+## sf
+
+## stars/terra/raster
+
+# R Spatial Future
+
