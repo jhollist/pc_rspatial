@@ -11,7 +11,7 @@ output:
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE, purl=FALSE, message=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 options(repos="http://cran.rstudio.com/")
 pkgs <- c("sf","sp","raster","knitr","stars", "terra")
 x<-lapply(pkgs, library, character.only = TRUE)
@@ -126,3 +126,194 @@ In addition to the resources and links already provide, there are three really n
 - [rspatial](https://www.rspatial.org/)
 
 *note: All involved are aware of the confusing "r-spatial" vs "rspatial" naming.  Probably not going to change anytime soon.  They both serve as useful resources and the authors of both are, in spite of what the naming suggests, working fairly closely together to improve spatial analysis capabilities in R.*
+
+## Demonstration: Reading in spatial data
+
+The rest of our time, I will go over how to read spatial data into R.  This all assumes that we have our datasets downloaded and available on our local machine.  Let's look at some data!  I have downloaded both raster and vector data for the state.  This includes two rasters, land cover and elevation, and one vector dataset, the RI State boundary.
+
+Before we do this, let's go ahead and make sure all of our packages are available to use.
+
+```{r library_calls, message=FALSE}
+library(sf)
+library(raster)
+library(terra)
+library(stars)
+library(ggplot2)
+library(mapview)
+library(dplyr)
+```
+
+### sf
+Reading in data with `sf` is pretty straightforward.  I have my data sitting in a "data" folder and need to point to that when reading in the data.
+
+```{r}
+ri <- st_read("data/State_Boundary_1997.shp")
+plot(ri)#$geometry)
+```
+
+I am specifying just the geometry here becuase the default plotting behavior for these `sf` objects is to create a plot all of the attributes.  This is not usually what I want, so I just specify the geometry column.
+
+One of the benefits of using `sf` is the speed.  Let's look at a biggish shape file with 1 million points!
+
+![source: https://media4.giphy.com/media/13B1WmJg7HwjGU/giphy.gif](https://media4.giphy.com/media/13B1WmJg7HwjGU/giphy.gif)
+
+```{r}
+#The old way
+system.time(rgdal::readOGR("data","big"))
+#The sf way
+system.time(st_read("data/big.shp"))
+```
+
+### raster
+
+The vector world in R has seen a lot of change over the last several years but is starting to stabilize around `sf`.  The raster packages in R are where vector packages were a couple of years ago.  We will mostly use `raster`, but I want to show how to read in data with both `terra` and `stars`.  First, to read in raster datasets we can use the `raster` packages `raster()` function.  For most raster formats it is simply a matter of telling `raster()` to file location.
+
+```{r}
+ri_nlcd <- raster("data/nlcd.tif")
+ri_nlcd
+plot(ri_nlcd)
+```
+
+To read this data in using `terra`
+
+```{r}
+ri_nlcd_terra <- rast("data/nlcd.tif")
+ri_nlcd_terra
+plot(ri_nlcd_terra)
+```
+
+To read this data in using `stars`
+
+```{r}
+ri_nlcd_stars <- read_stars("data/nlcd.tif")
+ri_nlcd_stars
+plot(ri_nlcd_stars)
+```
+
+So, not much difference other than how these are plotting and the information we get when we type the name.  Is one faster or slower?
+
+```{r}
+system.time(raster("data/nlcd.tif"))
+system.time(rast("data/nlcd.tif"))
+system.time(read_stars("data/nlcd.tif"))
+```
+
+Ah ha, `stars` loses.  Maybe those `stars` objects are really tiny?
+
+```{r}
+format(object.size(ri_nlcd), units = "Kb")
+format(object.size(ri_nlcd_terra), units = "Kb")
+format(object.size(ri_nlcd_stars), units = "Kb")
+```
+
+Whoa!  So, `stars` is slow and big.  This actually is important.  R usually reads all of your data into memory and then acts on it.  This has several implications.  First, it is usually faster when things are all loaded into memory, but there are trade-offs.  It can take longer to read stuff in when it is getting read into memory and you can only work with datasets that are smaller than your available memory.  What I suspect (but don't no for certain becuase I am mostly arm-waiving as I write this), is that `stars` is reading the dataset into memory which is why it is 1) bigger and 2) slower to read.  I bet we will see some performance improvements with some operations though.  Conversely, I know that `raster` only points to the data and pretty certain `terra` does to.  This is fast for reading and lets us connect to big datasets, but might bite us when we go to work with the data.  In any event, I have very little experience using `terra` and `stars` so don't know the in's an out's of which is faster when.  Also, I am pretty sure there will be overlap in some functionality between the three packages, but also some functionality unique to them.  Again, I am not familiar enough with the newer packages to know much about this.  That being said it is an active area of development and we at least know how to read data in!
+
+For the rest of the demo, we will stick with the old standard, `raster`.
+
+## Making maps
+
+There are two general categories for maps, static and interactive.  Static maps are the types we would generate for publications and interactive are what we want when working with data or have maps available via websites.  We are only going to show the absolute basics for both.
+
+### Static maps with `ggplot2`
+
+Let's use the state boundary to make a simple static map of the NLCD for Rhode Island.  
+
+```{r}
+# First let's match up coordinate reference systems
+ri_prj <- st_transform(ri, st_crs(ri_nlcd))
+
+ri_map <- ggplot(ri_prj) +
+  geom_sf(size = 1, color = "black", fill = "steelblue4", alpha = 0.3) +
+  labs(title = "Rhode Island") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
+ri_map
+```
+Hey look, a map!  We are stopping with simple here, but just wanted to let you know that you can create maps with `ggplot2`. I have another example of some older work of mine below that is a bit more complicated showing that you can really create whatever you can imagine.
+
+![](https://esajournals.onlinelibrary.wiley.com/cms/asset/efac1082-66db-4328-b7e6-e701c41b429e/ecs21321-fig-0011-m.jpg)
+
+
+### Interactive maps with `mapview`
+
+Let's expand our map a bit, but now we want to add the land cover data and have our data be interactive. First let's clean up our NLCD data becuase right now we have NLCD for portions of Massachusetts and Connecticut.
+
+```{r warning=FALSE}
+# Crop and mask the NLCD to the state boundaries
+ri_nlcd_mask <- mask(crop(ri_nlcd, ri_prj), ri_prj)
+
+# Use mapview from the mapview package
+ri_mv <- mapview(ri_prj, lwd = 1.5, color = "black", fill = NA) + mapview(ri_nlcd_mask)
+ri_mv
+```
+
+## Some analysis
+
+So far we have seen how to read in our data, take a quick look at the resulting object in R, and create some simple maps.  Now lets play around with some very simple analysis.  We will run generate some samples and extract information for those samples and calculate summary statistics.  Let's assume that we are interested in elevation by land cover type.  Maybe not an interesting question, but we have the data handy so it'll do.
+
+### Stratified Random Sample
+
+First, lets create some sample locations.  We could do a simple random sample but then we are likely to not sample all of our land cover classes appropriately.  So, instead of that let's try a stratified sample where we sample the same number of samples in each land cover class.  This will result in oversampling the less common classes, but for our purposes today it should be fine.
+
+```{r}
+# Create a stratified sample of landcover with 30 samples per class
+# The sp argument gives a point dataset as the results
+ri_samples <- sampleStratified(ri_nlcd_mask, size = 30, sp = TRUE)
+```
+
+Remember that the `raster` package is an older package and it was built when the `sp` package was used for vector data.  We are in now operating in the `sf` world so we just want to make sure that our data are all of the same type.  It is pretty easy to switch back and forth.
+
+````{r}
+# convert sp samples to sf samples
+ri_samples <- st_as_sf(ri_samples)
+```
+
+Lastly, let's just be sure that this worked as expected.  We can use the `extract` function from `raster` to extract out values for each point from the original land cover data.  If the stratified sample worked it should have 30 points per class.
+
+```{r}
+# Extract gets our land cover classes for each point, and the table function 
+# summarizes those.
+ri_lulc_samples <- extract(ri_nlcd_mask, ri_samples)
+table(ri_lulc_samples)
+```
+
+Looks good!  And we should at least map this, becuase, well GIS!
+
+```{r warning=FALSE}
+mapview(ri_nlcd_mask) + mapview(ri_samples)
+```
+
+### Elevation by land use/land cover
+
+Now that we have our samples, we can go ahead and get the data for simple elevation analysis.  We've seen how to do that already with the `extract` function.  But first we need to read in our elevation data.
+
+```{r}
+ri_elev <- raster("data/elev.tif")
+ri_elev_samples <- extract(ri_elev, ri_samples)
+```
+
+This only gets us part of the way there.  We now have an object that is just the elevation numbers. We need to figure out how to get our landcover information associated with the elevation data.  Luckily, the order of this object will help.  We already extracted the landcover all we need to do is join these to objects together into a data frame.
+
+```{r}
+# Create the data frame
+ri_lulc_elev <- data.frame(lulc = ri_lulc_samples, elev = ri_elev_samples)
+
+# Make this a special type of data frame, a tibble.
+# Printing to the screen is cleaner
+ri_lulc_elev <- as_tibble(ri_lulc_elev)
+ri_lulc_elev
+```
+
+
+Lastly, we can use the `dplyr` pacakge to summarize the information in this data frame.
+
+```{r}
+ri_lulc_elev <- group_by(ri_lulc_elev, lulc)
+ri_lulc_elev_summary <- summarize(ri_lulc_elev, 
+                                  avg_elev = mean(elev, na.rm = TRUE), 
+                                  sd_elev = sd(elev, na.rm = TRUE),
+                                  min_elev = min(elev, na.rm = TRUE),
+                                  max_elev = max(elev, na.rm = TRUE))
+ri_lulc_elev_summary
+```
+
